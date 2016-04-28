@@ -6,9 +6,9 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => 'localhost',
-	'username' => 'root',
-	'password' => 'root',
+	'hostname' => 'mysql857.umbler.com',
+	'username' => 'unici',
+	'password' => 'M5#OjE?AJ3Rpn',
 	'database' => 'exemplos_unici',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',

@@ -7,55 +7,54 @@ class Csvimport {
     private $initial_line = 0;
     private $delimiter = ",";
     private $detect_line_endings = FALSE;
-    
+
    /**
-     * Function that parses a CSV file and returns results
-     * as an array.
+     * Faz um parse do CSV e retorna os dados como um array
      *
      * @access  public
-     * @param   filepath        string  Location of the CSV file
-     * @param   column_headers  array   Alternate values that will be used for array keys instead of first line of CSV
-     * @param   detect_line_endings  boolean  When true sets the php INI settings to allow script to detect line endings. Needed for CSV files created on Macs.
-     * @param   initial_line  integer  Sets the line of the file from which start parsing data.
-     * @param   delimiter  string  The values delimiter (e.g. ";" or ",").
+     * @param   filepath             string   path do arquivo CSV
+     * @param   column_headers       array    Valores que serão utilizados como as chaves do array, e que ficam na primeira linha do CSV
+     * @param   detect_line_endings  boolean  Verifica se existe o marcador de fechamento de linha
+     * @param   initial_line         integer  Determina a linha inicial do CSV
+     * @param   delimiter            string   O delimitador (e.g. ";" ou ",").
      * @return  array
      */
     public function get_array($filepath=FALSE, $column_headers=FALSE, $detect_line_endings=FALSE, $initial_line=FALSE, $delimiter=FALSE)
     {
-        // Raise memory limit (for big files)
+        // Define o limite de memória
         ini_set('memory_limit', '20M');
 
-        // File path
+        // Path do arquivo
         if(! $filepath)
         {
             $filepath = $this->_get_filepath();
         }
         else
         {
-            // If filepath provided, set it
+            // Define o path
             $this->_set_filepath($filepath);
         }
-        // If file doesn't exists, return false
+        // Retorna false se o arquivo não existir
         if(! file_exists($filepath))
         {
             return FALSE;
         }
-        // auto detect row endings
+        // detecta o final da linha
         if(! $detect_line_endings)
         {
             $detect_line_endings = $this->_get_detect_line_endings();
         }
         else
         {
-            // If detect_line_endings provided, set it
+            // Define a detecção do final da linha
             $this->_set_detect_line_endings($detect_line_endings);
         }
-        // If true, auto detect row endings
+        // Se for true, define a detecção do final de linha no ini_set
         if($detect_line_endings)
         {
             ini_set("auto_detect_line_endings", TRUE);
         }
-        // Parse from this line on
+        // Parse pra linha inicial
         if(! $initial_line)
         {
             $initial_line = $this->_get_initial_line();
@@ -64,27 +63,27 @@ class Csvimport {
         {
             $this->_set_initial_line($initial_line);
         }
-        // Delimiter
+        // Delimitador
         if(! $delimiter)
         {
             $delimiter = $this->_get_delimiter();
         }
         else
         {
-            // If delimiter provided, set it
+            // Define o delimitador
             $this->_set_delimiter($delimiter);
         }
-        // Column headers
+        // Nomes das colunas de dados
         if(! $column_headers)
         {
             $column_headers = $this->_get_column_headers();
         }
         else
         {
-            // If column headers provided, set them
+            // Define o nome das colunas de dados
             $this->_set_column_headers($column_headers);
         }
-        // Open the CSV for reading
+        // Abre o CSV para leitura
         $this->_get_handle();
 
         $row = 0;
@@ -95,10 +94,10 @@ class Csvimport {
                 $row++;
                 continue;
             }
-            // If first row, parse for column_headers
+            // Se a linha for a primeira, verifica os cabeçalhos
             if($row == $this->initial_line)
             {
-                // If column_headers already provided, use them
+                // Se column_headers existe, então usa
                 if($this->column_headers)
                 {
                     foreach ($this->column_headers as $key => $value)
@@ -106,7 +105,7 @@ class Csvimport {
                         $column_headers[$key] = trim($value);
                     }
                 }
-                else // Parse first row for column_headers to use
+                else // Faz o parse da primeira linha pra uso
                 {
                     foreach ($data as $key => $value)
                     {
@@ -116,8 +115,11 @@ class Csvimport {
             }
             else
             {
-                $new_row = $row - $this->initial_line - 1; // needed so that the returned array starts at 0 instead of 1
-                foreach($column_headers as $key => $value) // assumes there are as many columns as their are title columns
+                // necessário para que o array retornado inicie em 0 ao invés de 1
+                $new_row = $row - $this->initial_line - 1;
+
+                // monta o array definindo as chaves a partir das colunas definidas no CSV
+                foreach($column_headers as $key => $value)
                 {
                     $result[$new_row][$value] = utf8_encode(trim($data[$key]));
                 }
@@ -133,21 +135,22 @@ class Csvimport {
     }
 
     /**
-     * Sets the "detect_line_endings" flag
+     * Define "detect_line_endings"
      *
      * @access  private
-     * @param   detect_line_endings    bool  The flag bit
+     * @param   detect_line_endings  bool  Valor
      * @return  void
      */
     private function _set_detect_line_endings($detect_line_endings)
     {
         $this->detect_line_endings = $detect_line_endings;
     }
+
     /**
-     * Sets the "detect_line_endings" flag
+     * Define "detect_line_endings"
      *
      * @access  public
-     * @param   detect_line_endings    bool  The flag bit
+     * @param   detect_line_endings  bool  Valor
      * @return  void
      */
     public function detect_line_endings($detect_line_endings)
@@ -155,8 +158,9 @@ class Csvimport {
         $this->_set_detect_line_endings($detect_line_endings);
         return $this;
     }
+
     /**
-     * Gets the "detect_line_endings" flag
+     * Recupera o valor de "detect_line_endings"
      *
      * @access  private
      * @return  bool
@@ -165,22 +169,24 @@ class Csvimport {
     {
         return $this->detect_line_endings;
     }
+
     /**
-     * Sets the initial line from which start to parse the file
+     * Define a linha inicial
      *
      * @access  private
-     * @param   initial_line    int  Start parse from this line
+     * @param   initial_line    int  Valor da linha inicial
      * @return  void
      */
     private function _set_initial_line($initial_line)
     {
        return $this->initial_line = $initial_line;
     }
+
     /**
-     * Sets the initial line from which start to parse the file
+     * Define a linha inicial onde a análise irá começar
      *
      * @access  public
-     * @param   initial_line    int  Start parse from this line
+     * @param   initial_line    int  Linha
      * @return  void
      */
     public function initial_line($initial_line)
@@ -188,8 +194,9 @@ class Csvimport {
         $this->_set_initial_line($initial_line);
         return $this;
     }
+
     /**
-     * Gets the initial line from which start to parse the file
+     * Recupera a linha inicial onde a análise irá começar
      *
      * @access  private
      * @return  int
@@ -198,22 +205,24 @@ class Csvimport {
     {
         return $this->initial_line;
     }
+
     /**
-     * Sets the values delimiter
+     * Define o valor do delimitador
      *
      * @access  private
-     * @param   initial_line    string  The values delimiter (eg. "," or ";")
+     * @param   initial_line    string  Delimitador (eg. "," ou ";")
      * @return  void
      */
     private function _set_delimiter($delimiter)
     {
         $this->delimiter = $delimiter;
     }
+
     /**
-     * Sets the values delimiter
+     * Define o valor do delimitador
      *
      * @access  public
-     * @param   initial_line    string  The values delimiter (eg. "," or ";")
+     * @param   initial_line    string  Delimitador (eg. "," ou ";")
      * @return  void
      */
     public function delimiter($delimiter)
@@ -221,8 +230,9 @@ class Csvimport {
         $this->_set_delimiter($delimiter);
         return $this;
     }
+
     /**
-     * Gets the values delimiter
+     * Recupera o valor do delimitador
      *
      * @access  private
      * @return  string
@@ -231,22 +241,24 @@ class Csvimport {
     {
         return $this->delimiter;
     }
+
     /**
-     * Sets the filepath of a given CSV file
+     * Define o path do arquivo CSV
      *
      * @access  private
-     * @param   filepath    string  Location of the CSV file
+     * @param   filepath    string  Path do arquivo
      * @return  void
      */
     private function _set_filepath($filepath)
     {
         $this->filepath = $filepath;
     }
+
     /**
-     * Sets the filepath of a given CSV file
+     * Define o path do arquivo CSV
      *
      * @access  public
-     * @param   filepath    string  Location of the CSV file
+     * @param   filepath    string  Path do arquivo
      * @return  void
      */
     public function filepath($filepath)
@@ -254,8 +266,9 @@ class Csvimport {
         $this->_set_filepath($filepath);
         return $this;
     }
+
     /**
-     * Gets the filepath of a given CSV file
+     * Recupera o path do arquivo CSV
      *
      * @access  private
      * @return  string
@@ -264,11 +277,12 @@ class Csvimport {
     {
         return $this->filepath;
     }
+
    /**
-     * Sets the alternate column headers that will be used when creating the array
+     * Define as colunas que serão as chaves do array
      *
      * @access  private
-     * @param   column_headers  array   Alternate column_headers that will be used instead of first line of CSV
+     * @param   column_headers  array   Colunas de dados do arquivo CSV
      * @return  void
      */
     private function _set_column_headers($column_headers='')
@@ -278,11 +292,12 @@ class Csvimport {
             $this->column_headers = $column_headers;
         }
     }
+
     /**
-     * Sets the alternate column headers that will be used when creating the array
+     * Define as colunas que serão as chaves do array
      *
      * @access  public
-     * @param   column_headers  array   Alternate column_headers that will be used instead of first line of CSV
+     * @param   column_headers  array   Colunas de dados do arquivo CSV
      * @return  void
      */
     public function column_headers($column_headers)
@@ -290,8 +305,9 @@ class Csvimport {
         $this->_set_column_headers($column_headers);
         return $this;
     }
+
     /**
-     * Gets the alternate column headers that will be used when creating the array
+     * Define as colunas que serão as chaves do array
      *
      * @access  private
      * @return  mixed
@@ -300,8 +316,9 @@ class Csvimport {
     {
         return $this->column_headers;
     }
+
    /**
-     * Opens the CSV file for parsing
+     * Abre o arquivo CSV
      *
      * @access  private
      * @return  void
@@ -310,8 +327,9 @@ class Csvimport {
     {
         $this->handle = fopen($this->filepath, "r");
     }
+
    /**
-     * Closes the CSV file when complete
+     * Fecha o CSV após concluir a manipulação
      *
      * @access  private
      * @return  array
